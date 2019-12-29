@@ -1,13 +1,15 @@
 package tech.bestwebshop.api.categoryservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.bestwebshop.api.categoryservice.exception.ResourceNotFoundException;
 import tech.bestwebshop.api.categoryservice.model.Category;
 import tech.bestwebshop.api.categoryservice.repository.CategoryRepository;
 
 import javax.validation.Valid;
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class CategoryController {
@@ -15,23 +17,26 @@ public class CategoryController {
     @Autowired
     CategoryRepository categoryRepository;
 
-    @GetMapping("/category")
-    public List<Category> getAllCategories(){ return categoryRepository.findAll();}
+    @GetMapping("/categories")
+    public Iterable<Category> getAllCategories() {
+        return categoryRepository.findAll();
+    }
 
-    @PostMapping("/category")
-    public Category createCategory(@Valid @RequestBody Category category){
+    @PostMapping("/categories")
+    public Category createCategory(@Valid @RequestBody Category category) {
         return categoryRepository.save(category);
     }
 
-    @GetMapping("/category/{id}")
-    public Category getCategoryById(@PathVariable(value = "id") Integer categoryId){
-        return categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResourceNotFoundException("Category", "id", categoryId)
-        );
+    @GetMapping("/categories/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable(value = "id") Integer categoryId) {
+        System.out.println("#### Get category by ID " + categoryId);
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        return optionalCategory.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("/category/{id}")
-    public Category deleteCategory(@PathVariable(value="id") Integer categoryId){
+    @DeleteMapping("/categories/{id}")
+    public Category deleteCategory(@PathVariable(value = "id") Integer categoryId) {
         Category categoryToDelete = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new ResourceNotFoundException("Category", "id", categoryId)
         );
