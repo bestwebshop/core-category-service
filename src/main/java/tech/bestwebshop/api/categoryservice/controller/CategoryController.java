@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.bestwebshop.api.categoryservice.exception.ResourceNotFoundException;
 import tech.bestwebshop.api.categoryservice.model.Category;
+import tech.bestwebshop.api.categoryservice.model.CategoryDTO;
 import tech.bestwebshop.api.categoryservice.repository.CategoryRepository;
 
 import javax.validation.Valid;
@@ -23,25 +24,31 @@ public class CategoryController {
     }
 
     @PostMapping("/categories")
-    public Category createCategory(@Valid @RequestBody Category category) {
-        return categoryRepository.save(category);
+    public ResponseEntity<Category> createCategory(@RequestBody @Valid CategoryDTO newCategory) {
+        try {
+            Category category = categoryRepository.save(new Category(0, newCategory.getName()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(category);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @GetMapping("/categories/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable(value = "id") Integer categoryId) {
-        System.out.println("#### Get category by ID " + categoryId);
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         return optionalCategory.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @DeleteMapping("/categories/{id}")
-    public Category deleteCategory(@PathVariable(value = "id") Integer categoryId) {
-        Category categoryToDelete = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResourceNotFoundException("Category", "id", categoryId)
-        );
-        categoryRepository.delete(categoryToDelete);
-        return categoryToDelete;
+    public ResponseEntity<Category> deleteCategory(@PathVariable(value = "id") Integer categoryId) {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        if(optionalCategory.isPresent()){
+            categoryRepository.deleteById(optionalCategory.get().getId());
+            return ResponseEntity.accepted().body(optionalCategory.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
 }

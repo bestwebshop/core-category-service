@@ -22,7 +22,7 @@ public class Category implements Serializable {
     @NonNull
     private int id;
 
-    @Column(name = "name")
+    @Column(name = "name", unique = true, nullable = false)
     @NonNull
     private String name;
 }
