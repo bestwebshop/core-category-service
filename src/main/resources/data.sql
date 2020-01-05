@@ -5,3 +5,5 @@ CREATE TABLE category (
 	name VARCHAR(255) NOT NULL,
 	PRIMARY KEY (id)
 );
+
+insert into category (name) values('Miscellaneous');
