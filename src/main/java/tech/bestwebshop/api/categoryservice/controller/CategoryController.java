@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tech.bestwebshop.api.categoryservice.exception.ResourceNotFoundException;
 import tech.bestwebshop.api.categoryservice.model.Category;
 import tech.bestwebshop.api.categoryservice.model.CategoryDTO;
 import tech.bestwebshop.api.categoryservice.repository.CategoryRepository;
@@ -39,6 +38,26 @@ public class CategoryController {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         return optionalCategory.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<Category> updateCategoryById(@PathVariable(value = "id") Integer categoryId,
+                                                       @RequestBody @Valid Category categoryToUpdate){
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        if (optionalCategory.isPresent()) {
+            if (!optionalCategory.get().equals(categoryToUpdate)) {
+                try {
+                    Category category = categoryRepository.save(categoryToUpdate);
+                    return ResponseEntity.status(HttpStatus.ACCEPTED).body(category);
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(optionalCategory.get());
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @DeleteMapping("/categories/{id}")
