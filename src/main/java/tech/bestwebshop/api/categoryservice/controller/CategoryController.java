@@ -8,6 +8,7 @@ import tech.bestwebshop.api.categoryservice.model.Category;
 import tech.bestwebshop.api.categoryservice.model.CategoryDTO;
 import tech.bestwebshop.api.categoryservice.repository.CategoryRepository;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.util.Optional;
 
@@ -19,11 +20,13 @@ public class CategoryController {
     CategoryRepository categoryRepository;
 
     @GetMapping("/categories")
+    @RolesAllowed({"USER"})
     public Iterable<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
 
     @PostMapping("/categories")
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<Category> createCategory(@RequestBody @Valid CategoryDTO newCategory) {
         try {
             Category category = categoryRepository.save(new Category(0, newCategory.getName()));
@@ -34,6 +37,7 @@ public class CategoryController {
     }
 
     @GetMapping("/categories/{id}")
+    @RolesAllowed({"USER"})
     public ResponseEntity<Category> getCategoryById(@PathVariable(value = "id") Integer categoryId) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         return optionalCategory.map(ResponseEntity::ok)
@@ -41,6 +45,7 @@ public class CategoryController {
     }
 
     @PutMapping("/categories/{id}")
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<Category> updateCategoryById(@PathVariable(value = "id") Integer categoryId,
                                                        @RequestBody @Valid Category categoryToUpdate){
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
@@ -61,6 +66,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/categories/{id}")
+    @RolesAllowed({"ADMIN"})
     public ResponseEntity<Category> deleteCategory(@PathVariable(value = "id") Integer categoryId) {
         Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         if(optionalCategory.isPresent()){
